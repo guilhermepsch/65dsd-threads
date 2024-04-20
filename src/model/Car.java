@@ -4,6 +4,7 @@ public class Car extends Thread {
 
     private Node currentNode;
     private final Map map;
+    private Path currentCrossroadPath;
 
     public Car(Node currentNode, Map map) {
         this.map = map;
@@ -23,22 +24,33 @@ public class Car extends Thread {
         while (true) {
             synchronized (currentNode) {
                 int direction = currentNode.getDirection();
-                Node nextNode = getNextNode(direction);
+                Node nextNode;
 
-                if (nextNode != null) {
-                    synchronized (nextNode) {
-                        if (nextNode.getCar() == null) {
-                            currentNode.removeCar();
-                            nextNode.setCar(this);
-                            setCurrentNode(nextNode);
-                            System.out.println(getName() + " moved to (" + nextNode + ")");
-                        } else {
-                            System.out.println(getName() + " encountered another car at (" + nextNode + ")");
-                        }
-                    }
+                if (currentNode.isCrossRoadStart()){
+                    currentCrossroadPath = map.createPathForCrossroad(currentNode);
+                }
+
+                if (currentCrossroadPath != null && !currentCrossroadPath.getNodes().isEmpty()) {
+                    nextNode = currentCrossroadPath.getNodes().getFirst();
+                    currentCrossroadPath.getNodes().removeFirst();
                 } else {
+                    nextNode = map.getNextNode(direction, currentNode);
+                }
+
+                if (nextNode == null) {
                     System.out.println(getName() + " reached the end of the road.");
                     break;
+                }
+
+                synchronized (nextNode) {
+                    if (nextNode.getCar() == null) {
+                        currentNode.removeCar();
+                        nextNode.setCar(this);
+                        setCurrentNode(nextNode);
+                        System.out.println(getName() + " moved to (" + nextNode.getDirection() + ")");
+                    } else {
+                        System.out.println(getName() + " encountered another car at (" + nextNode + ")");
+                    }
                 }
             }
 
@@ -51,19 +63,4 @@ public class Car extends Thread {
     }
 
 
-    private Node getNextNode(int direction) {
-        switch (direction) {
-            case Node.UP:
-                return map.getNodeAbove(currentNode);
-            case Node.RIGHT:
-                return map.getNodeOnRight(currentNode);
-            case Node.DOWN:
-                return map.getNodeBelow(currentNode);
-            case Node.LEFT:
-                return map.getNodeOnLeft(currentNode);
-            default:
-                System.out.println("Invalid direction!");
-                return null;
-        }
-    }
 }

@@ -1,5 +1,7 @@
 package model;
 
+import java.util.List;
+
 public class Node {
     public static final int NONE = 0;
     public static final int UP = 1;

@@ -1,5 +1,8 @@
 package model;
 
+import java.util.ArrayList;
+import java.util.Random;
+
 public class Map {
 
     private Node[][] map;
@@ -117,4 +120,73 @@ public class Map {
         }
         return -1;
     }
+
+    public Node getNextNode(int direction, Node currentNode) {
+        switch (direction) {
+            case Node.UP:
+                return this.getNodeAbove(currentNode);
+            case Node.RIGHT:
+                return this.getNodeOnRight(currentNode);
+            case Node.DOWN:
+                return this.getNodeBelow(currentNode);
+            case Node.LEFT:
+                return this.getNodeOnLeft(currentNode);
+            default:
+                System.out.println("Invalid direction!");
+                return null;
+        }
+    }
+
+    public Path createPathForCrossroad(Node currentNode) {
+        Path path = new Path();
+        Random random = new Random();
+        Node crossRoadNode = getNextNode(currentNode.getDirection(), currentNode);
+        path.getNodes().add(crossRoadNode);
+        currentNode = crossRoadNode;
+        while (!currentNode.isCrossroadExit()) {
+            switch (currentNode.getDirection()) {
+                case Node.CROSS_UP:
+                    currentNode = this.getNodeAbove(currentNode);
+                    path.getNodes().add(currentNode);
+                    break;
+                case Node.CROSS_RIGHT:
+                    currentNode = this.getNodeOnRight(currentNode);
+                    path.getNodes().add(currentNode);
+                    break;
+                case Node.CROSS_DOWN:
+                    currentNode = this.getNodeBelow(currentNode);
+                    path.getNodes().add(currentNode);
+                    break;
+                case Node.CROSS_LEFT:
+                    currentNode = this.getNodeOnLeft(currentNode);
+                    path.getNodes().add(currentNode);
+                    break;
+                case Node.CROSS_UP_RIGHT, Node.CROSS_DOWN_LEFT, Node.CROSS_RIGHT_DOWN, Node.CROSS_UP_LEFT:
+                    if (path.getNodes().size() == 3) {
+                        for (Node n : this.getPossibleNodes(currentNode)) {
+                            if (n.isCrossroadExit()) {
+                                currentNode = n;
+                                break;
+                            }
+                        }
+                    } else {
+                        Node[] possibleNodes = this.getPossibleNodes(currentNode);
+                        currentNode = possibleNodes[random.nextInt(2)];
+                    }
+                    path.getNodes().add(currentNode);
+            }
+        }
+        return path;
+    }
+
+    private Node[] getPossibleNodes(Node currentNode) {
+        return switch (currentNode.getDirection()) {
+            case Node.CROSS_UP_RIGHT -> new Node[]{this.getNodeAbove(currentNode), this.getNodeOnRight(currentNode)};
+            case Node.CROSS_UP_LEFT -> new Node[]{this.getNodeAbove(currentNode), this.getNodeOnLeft(currentNode)};
+            case Node.CROSS_RIGHT_DOWN -> new Node[]{this.getNodeOnRight(currentNode), this.getNodeBelow(currentNode)};
+            case Node.CROSS_DOWN_LEFT -> new Node[]{this.getNodeBelow(currentNode), this.getNodeOnLeft(currentNode)};
+            default -> new Node[]{};
+        };
+    }
+
 }
