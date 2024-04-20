@@ -1,6 +1,6 @@
 package model;
 
-public class Car extends Thread{
+public class Car extends Thread {
 
     private Node currentNode;
     private final Map map;
@@ -23,7 +23,6 @@ public class Car extends Thread{
         while (true) {
             synchronized (currentNode) {
                 int direction = currentNode.getDirection();
-
                 Node nextNode = getNextNode(direction);
 
                 if (nextNode != null) {
@@ -67,6 +66,4 @@ public class Car extends Thread{
                 return null;
         }
     }
-
-
 }

@@ -10,6 +10,7 @@ public class Map {
         this.map = map;
         this.entrances = entrances;
         this.exits = exits;
+        this.mapCrossroadsEntrancesAndExits();
     }
 
     public Node[][] getMap() {
@@ -22,6 +23,49 @@ public class Map {
 
     public Node[] getExits() {
         return exits;
+    }
+
+    private void mapCrossroadsEntrancesAndExits() {
+        for (int i = 0; i < map.length; i++) {
+            for (int j = 0; j < map[i].length; j++) {
+                Node currentNode = map[i][j];
+                switch (currentNode.getDirection()) {
+                    case Node.UP:
+                        if (i + 1 < map.length && map[i + 1][j].isCrossRoad()) {
+                            currentNode.setCrossroadExit(true);
+                        }
+                        if (i - 1 >= 0 && map[i - 1][j].isCrossRoad()) {
+                            currentNode.setCrossRoadStart(true);
+                        }
+                        break;
+                    case Node.LEFT:
+                        if (j + 1 < map[i].length && map[i][j + 1].isCrossRoad()) {
+                            currentNode.setCrossroadExit(true);
+                        }
+                        if (j - 1 >= 0 && map[i][j - 1].isCrossRoad()) {
+                            currentNode.setCrossRoadStart(true);
+                        }
+                        break;
+                    case Node.RIGHT:
+                        if (j - 1 >= 0 && map[i][j - 1].isCrossRoad()) {
+                            currentNode.setCrossroadExit(true);
+                        }
+                        if (j + 1 < map[i].length && map[i][j + 1].isCrossRoad()) {
+                            currentNode.setCrossRoadStart(true);
+                        }
+                        break;
+                    case Node.DOWN:
+                        if (i - 1 >= 0 && map[i - 1][j].isCrossRoad()) {
+                            currentNode.setCrossroadExit(true);
+                        }
+                        if (i + 1 < map.length && map[i + 1][j].isCrossRoad()) {
+                            currentNode.setCrossRoadStart(true);
+                        }
+                        break;
+                    default:
+                }
+            }
+        }
     }
 
     public Node getNodeAbove(Node currentNode) {

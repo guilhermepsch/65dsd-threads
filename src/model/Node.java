@@ -18,13 +18,15 @@ public class Node {
     private final int direction;
     private final boolean isStart;
     private final boolean isEnd;
-    private Car car; // Attribute to represent the car occupying the node
+    private boolean isCrossroadExit;
+    private boolean isCrossRoadStart;
+    private Car car;
 
     public Node(int direction, boolean isStart, boolean isEnd) {
         this.direction = direction;
         this.isStart = isStart;
         this.isEnd = isEnd;
-        this.car = null; // Initially, no car occupies the node
+        this.car = null;
     }
 
     public synchronized int getDirection() {
@@ -41,6 +43,22 @@ public class Node {
 
     public boolean isEnd() {
         return isEnd;
+    }
+
+    public boolean isCrossroadExit() {
+        return isCrossroadExit;
+    }
+
+    public void setCrossroadExit(boolean crossroadExit) {
+        isCrossroadExit = crossroadExit;
+    }
+
+    public boolean isCrossRoadStart() {
+        return isCrossRoadStart;
+    }
+
+    public void setCrossRoadStart(boolean crossRoadStart) {
+        isCrossRoadStart = crossRoadStart;
     }
 
     public synchronized Car getCar() {
