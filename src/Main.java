@@ -1,31 +1,37 @@
+import factories.MapFactory;
+import factories.NodeFactory;
 import model.Car;
-import model.Node;
 import model.Map;
+import model.Node;
+import service.MapParser;
 
 import java.io.File;
 import java.io.IOException;
 
-import static service.MapParser.createMap;
-
 public class Main {
     public static void main(String[] args) {
         try {
-            Map map = createMap(new File(Main.class.getResource("/malha-exemplo-1.txt").getPath()));
+            MapParser mapParser = new MapParser(new NodeFactory(), new MapFactory());
+            Map map = mapParser.createMapFromFile(new File(Main.class.getResource("/malha-exemplo-1.txt").getPath()));
 
-//            Node[][] matrix = map.getMap();
-//            for (int i = 0; i < matrix.length; i++) {
-//                for (int j = 0; j < matrix[i].length; j++) {
-//                    Node n = matrix[i][j];
-//                    System.out.print(n.isCrossroadExit() + " ");
-//                }
-//                System.out.println();
-//            }
+//            printMapInfo(map);
 
-            Car car = new Car(map.getEntrances()[1], map);
+            Car car = new Car(map.entrances()[1], map);
             car.start();
         } catch (IOException e) {
             System.err.println("Error reading file!");
             e.printStackTrace();
+        }
+    }
+
+    private static void printMapInfo(Map map) {
+        Node[][] matrix = map.map();
+        for (int i = 0; i < matrix.length; i++) {
+            for (int j = 0; j < matrix[i].length; j++) {
+                Node n = matrix[i][j];
+                System.out.print(n.isCrossRoadStart() + " ");
+            }
+            System.out.println();
         }
     }
 }

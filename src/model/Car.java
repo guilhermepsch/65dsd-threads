@@ -23,19 +23,7 @@ public class Car extends Thread {
     public void run() {
         while (true) {
             synchronized (currentNode) {
-                int direction = currentNode.getDirection();
-                Node nextNode;
-
-                if (currentNode.isCrossRoadStart()){
-                    currentCrossroadPath = map.createPathForCrossroad(currentNode);
-                }
-
-                if (currentCrossroadPath != null && !currentCrossroadPath.getNodes().isEmpty()) {
-                    nextNode = currentCrossroadPath.getNodes().getFirst();
-                    currentCrossroadPath.getNodes().removeFirst();
-                } else {
-                    nextNode = map.getNextNode(direction, currentNode);
-                }
+                Node nextNode = getNextNode();
 
                 if (nextNode == null) {
                     System.out.println(getName() + " reached the end of the road.");
@@ -43,24 +31,42 @@ public class Car extends Thread {
                 }
 
                 synchronized (nextNode) {
-                    if (nextNode.getCar() == null) {
-                        currentNode.removeCar();
-                        nextNode.setCar(this);
-                        setCurrentNode(nextNode);
-                        System.out.println(getName() + " moved to (" + nextNode.getDirection() + ")");
-                    } else {
-                        System.out.println(getName() + " encountered another car at (" + nextNode + ")");
-                    }
+                    moveCar(nextNode);
                 }
             }
 
             try {
-                Thread.sleep(1000);
+                Thread.sleep(100);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
         }
     }
 
+    private Node getNextNode() {
+        if (currentNode.isCrossRoadStart()) {
+            currentCrossroadPath = map.createPathForCrossroad(currentNode);
+        }
 
+        if (currentCrossroadPath != null && !currentCrossroadPath.getNodes().isEmpty()) {
+            Node nextNode = currentCrossroadPath.getNextNode();
+            if (currentCrossroadPath.getNodes().isEmpty()) {
+                currentCrossroadPath = null;
+            }
+            return nextNode;
+        } else {
+            return map.getNextNode(currentNode.getDirection(), currentNode);
+        }
+    }
+
+    private void moveCar(Node nextNode) {
+        if (nextNode.getCar() == null) {
+            currentNode.removeCar();
+            nextNode.setCar(this);
+            setCurrentNode(nextNode);
+            System.out.println(getName() + " moved to (" + nextNode.getDirection().getValue() + ")");
+        } else {
+            System.out.println(getName() + " encountered another car at (" + nextNode + ")");
+        }
+    }
 }
