@@ -1,5 +1,6 @@
 import factories.MapFactory;
 import factories.NodeFactory;
+import factories.PathFactory;
 import model.Car;
 import model.Map;
 import model.Node;
@@ -13,10 +14,11 @@ public class Main {
         try {
             MapParser mapParser = new MapParser(new NodeFactory(), new MapFactory());
             Map map = mapParser.createMapFromFile(new File(Main.class.getResource("/malha-exemplo-1.txt").getPath()));
+            PathFactory pathFactory = new PathFactory(map);
 
 //            printMapInfo(map);
 
-            Car car = new Car(map.entrances()[1], map);
+            Car car = new Car(map.entrances()[1], map, pathFactory, 200);
             car.start();
         } catch (IOException e) {
             System.err.println("Error reading file!");

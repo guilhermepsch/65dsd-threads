@@ -1,14 +1,20 @@
 package model;
 
+import factories.PathFactory;
+
 public class Car extends Thread {
 
     private Node currentNode;
     private final Map map;
     private Path currentCrossroadPath;
+    private PathFactory pathFactory;
+    private int sleep;
 
-    public Car(Node currentNode, Map map) {
+    public Car(Node currentNode, Map map, PathFactory pathFactory, int sleep) {
         this.map = map;
         this.currentNode = currentNode;
+        this.pathFactory = pathFactory;
+        this.sleep = sleep;
     }
 
     public Node getCurrentNode() {
@@ -22,21 +28,14 @@ public class Car extends Thread {
     @Override
     public void run() {
         while (true) {
-            synchronized (currentNode) {
-                Node nextNode = getNextNode();
-
-                if (nextNode == null) {
-                    System.out.println(getName() + " reached the end of the road.");
-                    break;
-                }
-
-                synchronized (nextNode) {
-                    moveCar(nextNode);
-                }
+            Node nextNode = getNextNode();
+            if (nextNode == null) {
+                System.out.println(getName() + " reached the end of the road.");
+                break;
             }
-
+            moveCar(nextNode);
             try {
-                Thread.sleep(100);
+                Thread.sleep(this.sleep);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
@@ -45,7 +44,7 @@ public class Car extends Thread {
 
     private Node getNextNode() {
         if (currentNode.isCrossRoadStart()) {
-            currentCrossroadPath = map.createPathForCrossroad(currentNode);
+            currentCrossroadPath = pathFactory.createPath(currentNode);
         }
 
         if (currentCrossroadPath != null && !currentCrossroadPath.getNodes().isEmpty()) {
@@ -59,7 +58,7 @@ public class Car extends Thread {
         }
     }
 
-    private void moveCar(Node nextNode) {
+    private  void moveCar(Node nextNode) {
         if (nextNode.getCar() == null) {
             currentNode.removeCar();
             nextNode.setCar(this);
