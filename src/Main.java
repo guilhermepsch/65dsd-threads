@@ -13,7 +13,7 @@ public class Main {
     public static void main(String[] args) {
         try {
             MapParser mapParser = new MapParser(new NodeFactory(), new MapFactory());
-            Map map = mapParser.createMapFromFile(new File(Main.class.getResource("/malha-exemplo-1.txt").getPath()));
+            Map map = mapParser.createMapFromFile(new File(Main.class.getResource("/malha-exemplo-3.txt").getPath()));
             PathFactory pathFactory = new PathFactory(map);
 
 //            printMapInfo(map);

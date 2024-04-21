@@ -25,8 +25,8 @@ public class MapParser {
 
     public Map createMapFromFile(File file) throws IOException {
         try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
-            int numRows = Integer.parseInt(reader.readLine());
-            int numCols = Integer.parseInt(reader.readLine());
+            int numRows = Integer.parseInt((reader.readLine()).trim());
+            int numCols = Integer.parseInt(reader.readLine().trim());
 
             Node[][] map = new Node[numRows][numCols];
             List<Node> entrances = new ArrayList<>();
@@ -35,9 +35,9 @@ public class MapParser {
             int row = 0;
             String line;
             while ((line = reader.readLine()) != null) {
-                String[] parts = line.split("\\s+");
+                String[] parts = line.trim().split("\\s+"); // Trim leading and trailing whitespace
                 for (int col = 0; col < numCols; col++) {
-                    int directionValue = Integer.parseInt(parts[col]);
+                    int directionValue = Integer.parseInt(parts[col].trim()); // Trim whitespace from each part
                     boolean isStart = isStartNode(directionValue, row, col, numRows, numCols);
                     boolean isEnd = isEndNode(directionValue, row, col, numRows, numCols);
                     Direction direction = Direction.fromValue(directionValue);
