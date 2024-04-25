@@ -5,6 +5,9 @@ import factories.MapFactory;
 import factories.NodeFactory;
 import model.Map;
 import model.Node;
+import strategies.ExclusionStrategy;
+import strategies.MonitorExclusionStrategy;
+import strategies.SemaphoreExclusionStrategy;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -23,7 +26,7 @@ public class MapParser {
         this.mapFactory = mapFactory;
     }
 
-    public Map createMapFromFile(File file) throws IOException {
+    public Map createMapFromFile(File file, boolean useSemaphore) throws IOException {
         try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
             int numRows = Integer.parseInt((reader.readLine()).trim());
             int numCols = Integer.parseInt(reader.readLine().trim());
@@ -41,7 +44,10 @@ public class MapParser {
                     boolean isStart = isStartNode(directionValue, row, col, numRows, numCols);
                     boolean isEnd = isEndNode(directionValue, row, col, numRows, numCols);
                     Direction direction = Direction.fromValue(directionValue);
-                    map[row][col] = nodeFactory.createNode(direction, isStart, isEnd);
+                    ExclusionStrategy exclusionStrategy = useSemaphore ?
+                            new SemaphoreExclusionStrategy(1) : new MonitorExclusionStrategy();
+                    map[row][col] = nodeFactory.createNode(direction, isStart, isEnd, exclusionStrategy);
+
                     if (isStart) {
                         entrances.add(map[row][col]);
                     }
@@ -68,5 +74,4 @@ public class MapParser {
                 || (direction == Direction.LEFT.getValue() && col == 0)
                 || (direction == Direction.RIGHT.getValue() && col == numCols - 1);
     }
-
 }

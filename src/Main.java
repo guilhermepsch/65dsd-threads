@@ -13,13 +13,19 @@ public class Main {
     public static void main(String[] args) {
         try {
             MapParser mapParser = new MapParser(new NodeFactory(), new MapFactory());
-            Map map = mapParser.createMapFromFile(new File(Main.class.getResource("/malha-exemplo-3.txt").getPath()));
+            Map map = mapParser.createMapFromFile(new File(Main.class.getResource("/malha-exemplo-1.txt").getPath()), false);
             PathFactory pathFactory = new PathFactory(map);
 
 //            printMapInfo(map);
 
-            Car car = new Car(map.entrances()[1], map, pathFactory, 200);
+            Car car = new Car(map.entrances()[0], map, pathFactory, 200);
+            Car car2 = new Car(map.entrances()[1], map, pathFactory, 200);
+            Car car3 = new Car(map.entrances()[2], map, pathFactory, 200);
+            Car car4 = new Car(map.entrances()[3], map, pathFactory, 200);
             car.start();
+            car2.start();
+            car3.start();
+            car4.start();
         } catch (IOException e) {
             System.err.println("Error reading file!");
             e.printStackTrace();

@@ -1,6 +1,7 @@
 package model;
 
 import enums.Direction;
+import strategies.ExclusionStrategy;
 
 public class Node {
     private final Direction direction;
@@ -9,12 +10,14 @@ public class Node {
     private boolean isCrossroadExit;
     private boolean isCrossRoadStart;
     private Car car;
+    private final ExclusionStrategy exclusionStrategy;
 
-    public Node(Direction direction, boolean isStart, boolean isEnd) {
+    public Node(Direction direction, boolean isStart, boolean isEnd, ExclusionStrategy exclusionStrategy) {
         this.direction = direction;
         this.isStart = isStart;
         this.isEnd = isEnd;
         this.car = null;
+        this.exclusionStrategy = exclusionStrategy;
     }
 
     public Direction getDirection() {
@@ -59,5 +62,17 @@ public class Node {
 
     public void removeCar() {
         this.car = null;
+    }
+
+    public void enterCriticalRegion() {
+        exclusionStrategy.acquire();
+    }
+
+    public void exitCriticalRegion() {
+        exclusionStrategy.release();
+    }
+
+    public boolean tryEnterCriticalRegion() {
+        return exclusionStrategy.tryAcquire();
     }
 }

@@ -12,7 +12,11 @@ public class Path {
     }
 
     public List<Node> getNodes() {
-        return nodes;
+        return new LinkedList<Node>(this.nodes);
+    }
+
+    public void addNode(Node node) {
+        this.nodes.add(node);
     }
 
     public Node getNextNode() {

@@ -18,16 +18,16 @@ public record Map(Node[][] map, Node[] entrances, Node[] exits) {
             for (int j = 0; j < map[i].length; j++) {
                 Node currentNode = map[i][j];
                 switch (currentNode.getDirection()) {
-                    case Direction.UP:
+                    case UP:
                         setCrossroadExitAndStart(i, j, i + 1, j, i - 1, j);
                         break;
-                    case Direction.LEFT:
+                    case LEFT:
                         setCrossroadExitAndStart(i, j, i, j + 1, i, j - 1);
                         break;
-                    case Direction.RIGHT:
+                    case RIGHT:
                         setCrossroadExitAndStart(i, j, i, j - 1, i, j + 1);
                         break;
-                    case Direction.DOWN:
+                    case DOWN:
                         setCrossroadExitAndStart(i, j, i - 1, j, i + 1, j);
                         break;
                     default:
