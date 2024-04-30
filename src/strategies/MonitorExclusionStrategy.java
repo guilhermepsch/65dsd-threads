@@ -12,17 +12,20 @@ public class MonitorExclusionStrategy implements ExclusionStrategy {
     }
 
     @Override
-    public void acquire() {
+    public synchronized void acquire() {
         lock.lock();
     }
 
     @Override
-    public void release() {
-        lock.unlock();
+    public synchronized void release() {
+        try {
+            lock.unlock();
+        } catch (Exception e) {
+        }
     }
 
     @Override
-    public boolean tryAcquire() {
+    public synchronized boolean tryAcquire() {
         try {
             return lock.tryLock(200, TimeUnit.MILLISECONDS);
         } catch (InterruptedException e) {

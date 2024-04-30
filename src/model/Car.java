@@ -56,7 +56,7 @@ public class Car extends Thread {
                     break;
                 } else {
                     try {
-                        Thread.sleep(new Random().nextInt(500));
+                        Thread.sleep(new Random().nextInt(0,1500));
                     } catch (InterruptedException e) {
                         Thread.currentThread().interrupt();
                         throw new RuntimeException(this.getName() + ": Interrupted while waiting to acquire path", e);

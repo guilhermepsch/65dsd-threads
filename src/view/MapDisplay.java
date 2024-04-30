@@ -18,14 +18,8 @@ public class MapDisplay {
 
     private static final int RECTANGLE_SIZE = 50; // Adjust as needed
     private static final Color NODE_COLOR = Color.LIGHT_GRAY;
-    private static final Color START_COLOR = Color.GREEN;
-    private static final Color END_COLOR = Color.RED;
-    private static final Color CROSSROAD_EXIT_COLOR = Color.BLUE;
-    private static final Color CROSSROAD_START_COLOR = Color.YELLOW;
     private static final Color CAR_COLOR = Color.WHITE;
 
-    private static final int INITIAL_WIDTH = 800;
-    private static final int INITIAL_HEIGHT = 800;
     private static final int MARGIN = 50;
 
     private JPanel panel;
@@ -59,134 +53,6 @@ public class MapDisplay {
                 panel.repaint();
             }
         });
-    }
-
-    public JPanel getPanel() {
-        return panel;
-    }
-
-    public void repaint() {
-        this.panel.repaint();
-    }
-
-    private void drawMap(Graphics g) {
-        int numRows = nodes.length;
-        int numCols = nodes[0].length;
-
-        int rectWidth = (this.panel.getWidth() - 2 * MARGIN) / numCols;
-        int rectHeight = (this.panel.getHeight() - 2 * MARGIN) / numRows;
-
-        for (int i = 0; i < numRows; i++) {
-            for (int j = 0; j < numCols; j++) {
-                int x = MARGIN + j * rectWidth;
-                int y = MARGIN + i * rectHeight;
-
-                // Draw border
-                g.setColor(Color.BLACK);
-                g.drawRect(x, y, rectWidth, rectHeight);
-
-                // Fill rectangle with node color
-                Node node = nodes[i][j];
-                Color color = getNodeColor(node);
-                g.setColor(color);
-                g.fillRect(x + 1, y + 1, rectWidth - 1, rectHeight - 1);
-
-                // Draw arrow if not crossroad
-                if (!node.isCrossRoad()) {
-                    drawArrow(g, node.getDirection(), x, y, rectWidth, rectHeight);
-                }
-            }
-        }
-    }
-
-    private void drawArrow(Graphics g, Direction direction, int x, int y, int width, int height) {
-        int arrowSize = 10;
-        int arrowHalfSize = arrowSize / 2;
-
-        int centerX = x + width / 2;
-        int centerY = y + height / 2;
-
-        int[] xPoints = new int[3];
-        int[] yPoints = new int[3];
-
-        switch (direction) {
-            case UP -> {
-                xPoints[0] = centerX;
-                yPoints[0] = centerY - arrowHalfSize;
-                xPoints[1] = centerX - arrowHalfSize;
-                yPoints[1] = centerY + arrowHalfSize;
-                xPoints[2] = centerX + arrowHalfSize;
-                yPoints[2] = centerY + arrowHalfSize;
-            }
-            case RIGHT -> {
-                xPoints[0] = centerX + arrowHalfSize;
-                yPoints[0] = centerY;
-                xPoints[1] = centerX - arrowHalfSize;
-                yPoints[1] = centerY - arrowHalfSize;
-                xPoints[2] = centerX - arrowHalfSize;
-                yPoints[2] = centerY + arrowHalfSize;
-            }
-            case DOWN -> {
-                xPoints[0] = centerX;
-                yPoints[0] = centerY + arrowHalfSize;
-                xPoints[1] = centerX - arrowHalfSize;
-                yPoints[1] = centerY - arrowHalfSize;
-                xPoints[2] = centerX + arrowHalfSize;
-                yPoints[2] = centerY - arrowHalfSize;
-            }
-            case LEFT -> {
-                xPoints[0] = centerX - arrowHalfSize;
-                yPoints[0] = centerY;
-                xPoints[1] = centerX + arrowHalfSize;
-                yPoints[1] = centerY - arrowHalfSize;
-                xPoints[2] = centerX + arrowHalfSize;
-                yPoints[2] = centerY + arrowHalfSize;
-            }
-            default -> {
-
-            }
-        }
-
-        g.setColor(Color.BLACK);
-        g.fillPolygon(xPoints, yPoints, 3);
-    }
-
-    private void drawCars(Graphics g) {
-        for (Car car : cars) {
-            Node currentNode = car.getCurrentNode();
-            if (currentNode != null) {
-                int rectWidth = (this.panel.getWidth() - 2 * MARGIN) / nodes[0].length;
-                int rectHeight = (this.panel.getHeight() - 2 * MARGIN) / nodes.length;
-
-                int x = MARGIN + map.getColumn(currentNode) * rectWidth;
-                int y = MARGIN + map.getRow(currentNode) * rectHeight;
-
-                int carSize = Math.min(rectWidth, rectHeight) - 10;
-
-                int xOffset = (rectWidth - carSize) / 2;
-                int yOffset = (rectHeight - carSize) / 2;
-
-                g.setColor(CAR_COLOR);
-                g.fillOval(x + xOffset, y + yOffset, carSize, carSize);
-            }
-        }
-    }
-
-
-    public void addCar(Car car) {
-        cars.add(car);
-    }
-
-    private Color getNodeColor(Node node) {
-        return switch (node.getDirection()) {
-            case UP -> Color.BLUE;
-            case RIGHT -> Color.RED;
-            case DOWN -> Color.GREEN;
-            case LEFT -> Color.YELLOW;
-            case CROSS_UP_RIGHT, CROSS_UP_LEFT, CROSS_RIGHT_DOWN, CROSS_DOWN_LEFT, CROSS_UP, CROSS_DOWN, CROSS_LEFT,
-                 CROSS_RIGHT -> Color.PINK;
-            default -> Color.LIGHT_GRAY;
-        };
     }
 
     public void startSimulation(int carQuantity) {
@@ -236,6 +102,16 @@ public class MapDisplay {
         return false;
     }
 
+    private Node getFirstAvailableEntrance() {
+        Random random = new Random();
+        while (true) {
+            int index = random.nextInt(0, map.getEntrances().length);
+            if (map.getEntrances()[index].getCar() == null) {
+                return map.getEntrances()[index];
+            }
+        }
+    }
+
     public void stopSimulation() {
         simulationRunning = false;
         for (Car car : cars) {
@@ -243,26 +119,138 @@ public class MapDisplay {
         }
         cars.clear();
         cleanNodes();
-        this.panel.repaint();
+        panel.repaint();
     }
-
 
     private void cleanNodes() {
         for (Node[] row : nodes) {
             for (Node node : row) {
                 node.removeCar();
+                node.exitCriticalRegion();
             }
         }
     }
 
-    private Node getFirstAvailableEntrance() {
-        Random random = new Random();
-        while (true) {
-            int index = random.nextInt(0, map.getEntrances().length);
-            if (this.map.getEntrances()[index].getCar() != null) {
-                continue;
+    public void addCar(Car car) {
+        cars.add(car);
+    }
+
+    public JPanel getPanel() {
+        return panel;
+    }
+
+    private void drawMap(Graphics g) {
+        int numRows = nodes.length;
+        int numCols = nodes[0].length;
+
+        int rectWidth = (panel.getWidth() - 2 * MARGIN) / numCols;
+        int rectHeight = (panel.getHeight() - 2 * MARGIN) / numRows;
+
+        for (int i = 0; i < numRows; i++) {
+            for (int j = 0; j < numCols; j++) {
+                int x = MARGIN + j * rectWidth;
+                int y = MARGIN + i * rectHeight;
+
+                g.setColor(Color.BLACK);
+                g.drawRect(x, y, rectWidth, rectHeight);
+
+                Node node = nodes[i][j];
+                Color color = getNodeColor(node);
+                g.setColor(color);
+                g.fillRect(x + 1, y + 1, rectWidth - 1, rectHeight - 1);
+
+                if (!node.isCrossRoad()) {
+                    drawArrow(g, node.getDirection(), x, y, rectWidth, rectHeight);
+                }
             }
-            return this.map.getEntrances()[index];
         }
+    }
+
+    public void repaint() {
+        panel.repaint();
+    }
+
+    private void drawArrow(Graphics g, Direction direction, int x, int y, int width, int height) {
+        int arrowSize = 10;
+        int arrowHalfSize = arrowSize / 2;
+
+        int centerX = x + width / 2;
+        int centerY = y + height / 2;
+
+        int[] xPoints = new int[3];
+        int[] yPoints = new int[3];
+
+        switch (direction) {
+            case UP -> {
+                xPoints[0] = centerX;
+                yPoints[0] = centerY - arrowHalfSize;
+                xPoints[1] = centerX - arrowHalfSize;
+                yPoints[1] = centerY + arrowHalfSize;
+                xPoints[2] = centerX + arrowHalfSize;
+                yPoints[2] = centerY + arrowHalfSize;
+            }
+            case RIGHT -> {
+                xPoints[0] = centerX + arrowHalfSize;
+                yPoints[0] = centerY;
+                xPoints[1] = centerX - arrowHalfSize;
+                yPoints[1] = centerY - arrowHalfSize;
+                xPoints[2] = centerX - arrowHalfSize;
+                yPoints[2] = centerY + arrowHalfSize;
+            }
+            case DOWN -> {
+                xPoints[0] = centerX;
+                yPoints[0] = centerY + arrowHalfSize;
+                xPoints[1] = centerX - arrowHalfSize;
+                yPoints[1] = centerY - arrowHalfSize;
+                xPoints[2] = centerX + arrowHalfSize;
+                yPoints[2] = centerY - arrowHalfSize;
+            }
+            case LEFT -> {
+                xPoints[0] = centerX - arrowHalfSize;
+                yPoints[0] = centerY;
+                xPoints[1] = centerX + arrowHalfSize;
+                yPoints[1] = centerY - arrowHalfSize;
+                xPoints[2] = centerX + arrowHalfSize;
+                yPoints[2] = centerY + arrowHalfSize;
+            }
+            default -> {
+            }
+        }
+
+        g.setColor(Color.BLACK);
+        g.fillPolygon(xPoints, yPoints, 3);
+    }
+
+    private void drawCars(Graphics g) {
+        for (Car car : cars) {
+            Node currentNode = car.getCurrentNode();
+            if (currentNode != null) {
+                int rectWidth = (panel.getWidth() - 2 * MARGIN) / nodes[0].length;
+                int rectHeight = (panel.getHeight() - 2 * MARGIN) / nodes.length;
+
+                int x = MARGIN + map.getColumn(currentNode) * rectWidth;
+                int y = MARGIN + map.getRow(currentNode) * rectHeight;
+
+                int carSize = Math.min(rectWidth, rectHeight) - 10;
+
+                int xOffset = (rectWidth - carSize) / 2;
+                int yOffset = (rectHeight - carSize) / 2;
+
+                g.setColor(CAR_COLOR);
+                g.fillOval(x + xOffset, y + yOffset, carSize, carSize);
+            }
+        }
+    }
+
+    private Color getNodeColor(Node node) {
+        return switch (node.getDirection()) {
+            case UP -> Color.BLUE;
+            case RIGHT -> Color.RED;
+            case DOWN -> Color.GREEN;
+            case LEFT -> Color.YELLOW;
+            case CROSS_UP_RIGHT, CROSS_UP_LEFT, CROSS_RIGHT_DOWN, CROSS_DOWN_LEFT, CROSS_UP, CROSS_DOWN, CROSS_LEFT,
+                 CROSS_RIGHT -> Color.PINK;
+            default -> Color.LIGHT_GRAY;
+        };
     }
 }

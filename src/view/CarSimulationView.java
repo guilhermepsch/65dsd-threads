@@ -23,23 +23,21 @@ public class CarSimulationView extends JFrame {
         JPanel controlPanel = new JPanel();
         controlPanel.setLayout(new FlowLayout());
 
-        JLabel carQuantityLabel = new JLabel("Car Quantity:");
+        JLabel carQuantityLabel = new JLabel("Quantidade de Carros:");
         controlPanel.add(carQuantityLabel);
 
         carQuantityField = new JTextField(10);
         controlPanel.add(carQuantityField);
 
-        startButton = new JButton("Start Simulation");
+        startButton = new JButton("Iniciar");
         startButton.addActionListener(e -> startSimulation());
         controlPanel.add(startButton);
 
-        stopButton = new JButton("Stop Simulation"); // Initialize stop button
-        stopButton.addActionListener(e -> stopSimulation()); // Add action listener
-        controlPanel.add(stopButton); // Add stop button to control panel
+        stopButton = new JButton("Parar");
+        stopButton.addActionListener(e -> stopSimulation());
+        controlPanel.add(stopButton);
 
-        // Add the map display panel instead of the map display frame
         add(mapDisplay.getPanel(), BorderLayout.CENTER);
-
         add(controlPanel, BorderLayout.NORTH);
     }
 
@@ -47,12 +45,12 @@ public class CarSimulationView extends JFrame {
         try {
             carQuantity = Integer.parseInt(carQuantityField.getText());
             if (carQuantity < 0) {
-                JOptionPane.showMessageDialog(this, "Invalid car quantity. Please enter a positive integer.");
+                JOptionPane.showMessageDialog(this, "Quantidade inválida de carros, insira um número maior que 0.");
                 return;
             }
             mapDisplay.startSimulation(carQuantity);
         } catch (NumberFormatException ex) {
-            JOptionPane.showMessageDialog(this, "Invalid input. Please enter a valid integer.");
+            JOptionPane.showMessageDialog(this, "Quantidade inválida. Insira um inteiro válido");
         }
     }
 
