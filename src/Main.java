@@ -1,9 +1,7 @@
 import factories.MapFactory;
 import factories.NodeFactory;
 import factories.PathFactory;
-import model.Car;
 import model.Map;
-import model.Node;
 import service.MapParser;
 import view.CarSimulationView;
 import view.MapDisplay;

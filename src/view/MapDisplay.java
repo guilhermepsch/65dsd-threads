@@ -236,7 +236,7 @@ public class MapDisplay {
                 int xOffset = (rectWidth - carSize) / 2;
                 int yOffset = (rectHeight - carSize) / 2;
 
-                g.setColor(CAR_COLOR);
+                g.setColor(new Color(251, 238, 255));
                 g.fillOval(x + xOffset, y + yOffset, carSize, carSize);
             }
         }
@@ -244,12 +244,12 @@ public class MapDisplay {
 
     private Color getNodeColor(Node node) {
         return switch (node.getDirection()) {
-            case UP -> Color.BLUE;
-            case RIGHT -> Color.RED;
-            case DOWN -> Color.GREEN;
-            case LEFT -> Color.YELLOW;
+            case UP -> new Color(102, 0, 102);
+            case RIGHT -> new Color(128, 0, 128);
+            case DOWN -> new Color(190, 41, 236);
+            case LEFT -> new Color(216, 150, 255);
             case CROSS_UP_RIGHT, CROSS_UP_LEFT, CROSS_RIGHT_DOWN, CROSS_DOWN_LEFT, CROSS_UP, CROSS_DOWN, CROSS_LEFT,
-                 CROSS_RIGHT -> Color.PINK;
+                 CROSS_RIGHT -> new Color(239, 187, 255);
             default -> Color.LIGHT_GRAY;
         };
     }
