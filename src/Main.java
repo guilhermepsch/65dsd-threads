@@ -1,9 +1,11 @@
 import factories.MapFactory;
 import factories.NodeFactory;
 import factories.PathFactory;
+import model.Car;
 import model.Map;
 import model.Node;
 import service.MapParser;
+import view.CarSimulationView;
 import view.MapDisplay;
 
 import java.io.File;
@@ -16,19 +18,9 @@ public class Main {
             Map map = mapParser.createMapFromFile(new File(Main.class.getResource("/malha-exemplo-3.txt").getPath()), false);
             PathFactory pathFactory = new PathFactory(map);
 
-            MapDisplay mapDisplay = new MapDisplay(map.getNodes());
-            mapDisplay.setVisible(true);
-
-//            printMapInfo(map);
-
-//            Car car = new Car(map.entrances()[0], map, pathFactory, 200);
-//            Car car2 = new Car(map.entrances()[1], map, pathFactory, 200);
-//            Car car3 = new Car(map.entrances()[2], map, pathFactory, 200);
-//            Car car4 = new Car(map.entrances()[3], map, pathFactory, 200);
-//            car.start();
-//            car2.start();
-//            car3.start();
-//            car4.start();
+            MapDisplay mapDisplay = new MapDisplay(map, pathFactory);
+            CarSimulationView carSimView = new CarSimulationView(mapDisplay);
+            carSimView.run();
         } catch (IOException e) {
             System.err.println("Error reading file!");
             e.printStackTrace();

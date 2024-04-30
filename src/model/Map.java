@@ -97,4 +97,8 @@ public record Map(Node[][] map, Node[] entrances, Node[] exits) {
         return this.map;
     }
 
+    public Node[] getEntrances(){
+        return this.entrances;
+    }
+
 }

@@ -1,14 +1,20 @@
 package view;
 
 import enums.Direction;
+import factories.PathFactory;
+import model.Car;
+import model.Map;
 import model.Node;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
 
-public class MapDisplay extends JFrame {
+public class MapDisplay {
 
     private static final int RECTANGLE_SIZE = 50; // Adjust as needed
     private static final Color NODE_COLOR = Color.LIGHT_GRAY;
@@ -16,50 +22,59 @@ public class MapDisplay extends JFrame {
     private static final Color END_COLOR = Color.RED;
     private static final Color CROSSROAD_EXIT_COLOR = Color.BLUE;
     private static final Color CROSSROAD_START_COLOR = Color.YELLOW;
-    private static final Color CAR_COLOR = Color.ORANGE;
+    private static final Color CAR_COLOR = Color.WHITE;
 
     private static final int INITIAL_WIDTH = 800;
     private static final int INITIAL_HEIGHT = 800;
     private static final int MARGIN = 50;
 
+    private JPanel panel;
+    private Map map;
     private Node[][] nodes;
+    private List<Car> cars;
+    private PathFactory pathFactory;
+    private volatile boolean simulationRunning;
 
-    public MapDisplay(Node[][] nodes) {
-        this.nodes = nodes;
+    public MapDisplay(Map map, PathFactory pathFactory) {
+        this.map = map;
+        this.nodes = map.getNodes();
+        this.pathFactory = pathFactory;
+        this.cars = new ArrayList<>();
         initializeUI();
     }
 
     private void initializeUI() {
-        setTitle("Map Display");
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-
-        JPanel panel = new JPanel() {
+        panel = new JPanel() {
             @Override
             protected void paintComponent(Graphics g) {
                 super.paintComponent(g);
                 drawMap(g);
+                drawCars(g);
             }
         };
-        add(panel);
-
-        addComponentListener(new ComponentAdapter() {
+        panel.addComponentListener(new ComponentAdapter() {
             @Override
             public void componentResized(ComponentEvent e) {
                 super.componentResized(e);
                 panel.repaint();
             }
         });
+    }
 
-        setSize(INITIAL_WIDTH, INITIAL_HEIGHT);
-        setLocationRelativeTo(null);
+    public JPanel getPanel() {
+        return panel;
+    }
+
+    public void repaint() {
+        this.panel.repaint();
     }
 
     private void drawMap(Graphics g) {
         int numRows = nodes.length;
         int numCols = nodes[0].length;
 
-        int rectWidth = (getWidth() - 2 * MARGIN) / numCols;
-        int rectHeight = (getHeight() - 2 * MARGIN) / numRows;
+        int rectWidth = (this.panel.getWidth() - 2 * MARGIN) / numCols;
+        int rectHeight = (this.panel.getHeight() - 2 * MARGIN) / numRows;
 
         for (int i = 0; i < numRows; i++) {
             for (int j = 0; j < numCols; j++) {
@@ -128,7 +143,7 @@ public class MapDisplay extends JFrame {
                 yPoints[2] = centerY + arrowHalfSize;
             }
             default -> {
-                // Do nothing for other directions
+
             }
         }
 
@@ -136,6 +151,31 @@ public class MapDisplay extends JFrame {
         g.fillPolygon(xPoints, yPoints, 3);
     }
 
+    private void drawCars(Graphics g) {
+        for (Car car : cars) {
+            Node currentNode = car.getCurrentNode();
+            if (currentNode != null) {
+                int rectWidth = (this.panel.getWidth() - 2 * MARGIN) / nodes[0].length;
+                int rectHeight = (this.panel.getHeight() - 2 * MARGIN) / nodes.length;
+
+                int x = MARGIN + map.getColumn(currentNode) * rectWidth;
+                int y = MARGIN + map.getRow(currentNode) * rectHeight;
+
+                int carSize = Math.min(rectWidth, rectHeight) - 10;
+
+                int xOffset = (rectWidth - carSize) / 2;
+                int yOffset = (rectHeight - carSize) / 2;
+
+                g.setColor(CAR_COLOR);
+                g.fillOval(x + xOffset, y + yOffset, carSize, carSize);
+            }
+        }
+    }
+
+
+    public void addCar(Car car) {
+        cars.add(car);
+    }
 
     private Color getNodeColor(Node node) {
         return switch (node.getDirection()) {
@@ -149,10 +189,80 @@ public class MapDisplay extends JFrame {
         };
     }
 
+    public void startSimulation(int carQuantity) {
+        simulationRunning = true;
 
-    public static void main(String[] args) {
-        // Initialize your nodes here
-        // Node[][] nodes = ...;
-        //
+        for (int i = 0; i < carQuantity && simulationRunning; i++) {
+            if (insertCarIntoSimulation()) break;
+        }
+
+        new Thread(() -> {
+            while (simulationRunning) {
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+
+                List<Car> completedCars = new ArrayList<>();
+                for (Car car : cars) {
+                    if (!car.isAlive()) {
+                        completedCars.add(car);
+                    }
+                }
+                cars.removeAll(completedCars);
+
+                int currentCarQuantity = cars.size();
+                if (currentCarQuantity < carQuantity && simulationRunning) {
+                    for (int i = 0; i < carQuantity - currentCarQuantity && simulationRunning; i++) {
+                        if (insertCarIntoSimulation()) break;
+                    }
+                }
+            }
+        }).start();
+    }
+
+    private boolean insertCarIntoSimulation() {
+        Node startingNode = getFirstAvailableEntrance();
+        if (startingNode != null) {
+            Random random = new Random();
+            Car car = new Car(startingNode, map, pathFactory, random.nextInt(400, 1000), this);
+            addCar(car);
+            car.start();
+        } else {
+            System.out.println("No available entrance nodes!");
+            return true;
+        }
+        return false;
+    }
+
+    public void stopSimulation() {
+        simulationRunning = false;
+        for (Car car : cars) {
+            car.interrupt();
+        }
+        cars.clear();
+        cleanNodes();
+        this.panel.repaint();
+    }
+
+
+    private void cleanNodes() {
+        for (Node[] row : nodes) {
+            for (Node node : row) {
+                node.removeCar();
+            }
+        }
+    }
+
+    private Node getFirstAvailableEntrance() {
+        Random random = new Random();
+        while (true) {
+            int index = random.nextInt(0, map.getEntrances().length);
+            if (this.map.getEntrances()[index].getCar() != null) {
+                continue;
+            }
+            return this.map.getEntrances()[index];
+        }
     }
 }

@@ -1,6 +1,7 @@
 package model;
 
 import factories.PathFactory;
+import view.MapDisplay;
 
 import java.util.ArrayList;
 import java.util.Random;
@@ -12,12 +13,14 @@ public class Car extends Thread {
     private Path currentCrossroadPath;
     private final PathFactory pathFactory;
     private final int sleep;
+    private final MapDisplay mapDisplay;
 
-    public Car(Node currentNode, Map map, PathFactory pathFactory, int sleep) {
+    public Car(Node currentNode, Map map, PathFactory pathFactory, int sleep, MapDisplay mapDisplay) {
         this.currentNode = currentNode;
         this.map = map;
         this.pathFactory = pathFactory;
         this.sleep = sleep;
+        this.mapDisplay = mapDisplay;
     }
 
     @Override
@@ -79,6 +82,7 @@ public class Car extends Thread {
             nextNode.setCar(this);
             setCurrentNode(nextNode);
             System.out.println(this.getName() + " moved to (" + currentNode.getDirection().getValue() + ")");
+            mapDisplay.repaint();
         } else {
             System.out.println(this.getName() + " encountered another car at (" + nextNode.getDirection().getValue() + ")");
         }
