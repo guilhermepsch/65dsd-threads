@@ -26,11 +26,13 @@ public class Car extends Thread {
     @Override
     public void run() {
         while (true) {
-            try {
+             try {
                 Node nextNode = getNextNode();
                 if (nextNode == null) {
                     System.out.println(this.getName() + " reached the end of the road.");
                     currentNode.removeCar();
+                    mapDisplay.removeCar(this);
+                    mapDisplay.repaint();
                     break;
                 }
                 Node previousnode = currentNode;
@@ -47,7 +49,7 @@ public class Car extends Thread {
         }
     }
 
-    private synchronized Node getNextNode() {
+    private Node getNextNode() {
         if (currentNode.isCrossRoadStart()) {
             currentCrossroadPath = pathFactory.createPath(currentNode);
             while (true) {
@@ -88,7 +90,7 @@ public class Car extends Thread {
         }
     }
 
-    private synchronized boolean attemptPathAcquisition() {
+    private boolean attemptPathAcquisition() {
         System.out.println(this.getName() + " attempted to acquire path");
         ArrayList<Node> acquiredNodes = new ArrayList<>();
         for (Node node : currentCrossroadPath.getNodes()) {

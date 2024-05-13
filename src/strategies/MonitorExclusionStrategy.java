@@ -5,7 +5,7 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 public class MonitorExclusionStrategy implements ExclusionStrategy {
-    private final Lock lock;
+    private Lock lock;
 
     public MonitorExclusionStrategy() {
         lock = new ReentrantLock();
@@ -21,6 +21,7 @@ public class MonitorExclusionStrategy implements ExclusionStrategy {
         try {
             lock.unlock();
         } catch (Exception e) {
+            this.lock = new ReentrantLock();
         }
     }
 

@@ -57,11 +57,6 @@ public class MapDisplay {
 
     public void startSimulation(int carQuantity) {
         simulationRunning = true;
-
-        for (int i = 0; i < carQuantity && simulationRunning; i++) {
-            if (insertCarIntoSimulation()) break;
-        }
-
         new Thread(() -> {
             while (simulationRunning) {
                 try {
@@ -69,14 +64,6 @@ public class MapDisplay {
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
-
-                List<Car> completedCars = new ArrayList<>();
-                for (Car car : cars) {
-                    if (!car.isAlive()) {
-                        completedCars.add(car);
-                    }
-                }
-                cars.removeAll(completedCars);
 
                 int currentCarQuantity = cars.size();
                 if (currentCarQuantity < carQuantity && simulationRunning) {
@@ -133,6 +120,10 @@ public class MapDisplay {
 
     public void addCar(Car car) {
         cars.add(car);
+    }
+
+    public void removeCar(Car car) {
+        cars.remove(car);
     }
 
     public JPanel getPanel() {
